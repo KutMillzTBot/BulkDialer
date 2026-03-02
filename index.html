@@ -3,178 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KUT MILLZ BULK CALL CENTER</title>
+    <title>KUT MILLZ | SECURE TERMINAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS for Excel Parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@500&display=swap');
         
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        #queueContainer { scroll-behavior: smooth; }
         
         .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(99, 102, 241, 0.2);
         }
 
-        .premium-shadow {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        .active-glow {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+            border-color: rgba(99, 102, 241, 0.8) !important;
         }
 
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .scanline {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: rgba(99, 102, 241, 0.1);
+            animation: scanline 6s linear infinite;
+        }
+
+        .numpad-btn {
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+        }
+        .numpad-btn:active { background: rgba(99, 102, 241, 0.4); transform: scale(0.9); }
         
-        @keyframes pulse-border {
-            0% { border-color: rgba(99, 102, 241, 0.2); }
-            50% { border-color: rgba(99, 102, 241, 1); }
-            100% { border-color: rgba(99, 102, 241, 0.2); }
-        }
-        .active-call-ring { animation: pulse-border 2s infinite; }
+        /* Custom Scrollbar for Mobile */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-[#0f172a] min-h-screen p-4 md:p-8 text-slate-200">
-    <div class="max-w-6xl mx-auto space-y-6">
+<body class="bg-[#020617] min-h-screen text-slate-200">
+
+    <!-- SECURITY LOCKSCREEN -->
+    <div id="lockscreen" class="fixed inset-0 z-[100] bg-[#020617] flex items-center justify-center p-6">
+        <div class="scanline"></div>
+        <div class="max-w-md w-full glass p-8 rounded-[2rem] text-center shadow-2xl border-indigo-500/30">
+            <h1 class="text-3xl font-black italic text-white mb-2 italic">KUT MILLZ</h1>
+            <p class="text-[10px] font-black tracking-[0.4em] text-indigo-400 uppercase mb-8">Secure Access Required</p>
+            
+            <div class="flex justify-center gap-4 mb-8">
+                <div id="dot-1" class="w-4 h-4 rounded-full border-2 border-slate-700"></div>
+                <div id="dot-2" class="w-4 h-4 rounded-full border-2 border-slate-700"></div>
+                <div id="dot-3" class="w-4 h-4 rounded-full border-2 border-slate-700"></div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 max-w-[280px] mx-auto">
+                <button onclick="pressKey('1')" class="numpad-btn h-16 rounded-2xl font-black text-xl">1</button>
+                <button onclick="pressKey('2')" class="numpad-btn h-16 rounded-2xl font-black text-xl">2</button>
+                <button onclick="pressKey('3')" class="numpad-btn h-16 rounded-2xl font-black text-xl">3</button>
+                <button onclick="pressKey('4')" class="numpad-btn h-16 rounded-2xl font-black text-xl">4</button>
+                <button onclick="pressKey('5')" class="numpad-btn h-16 rounded-2xl font-black text-xl">5</button>
+                <button onclick="pressKey('6')" class="numpad-btn h-16 rounded-2xl font-black text-xl">6</button>
+                <button onclick="pressKey('7')" class="numpad-btn h-16 rounded-2xl font-black text-xl">7</button>
+                <button onclick="pressKey('8')" class="numpad-btn h-16 rounded-2xl font-black text-xl">8</button>
+                <button onclick="pressKey('9')" class="numpad-btn h-16 rounded-2xl font-black text-xl">9</button>
+                <div class="h-16"></div>
+                <button onclick="pressKey('0')" class="numpad-btn h-16 rounded-2xl font-black text-xl">0</button>
+                <button onclick="clearPin()" class="h-16 rounded-2xl font-bold text-[10px] text-rose-400 uppercase">Clear</button>
+            </div>
+            
+            <p id="lockError" class="text-rose-500 text-[10px] font-bold mt-6 uppercase hidden">Access Denied: Invalid Key</p>
+        </div>
+    </div>
+
+    <!-- MAIN INTERFACE -->
+    <div id="mainApp" class="hidden max-w-7xl mx-auto p-4 md:p-8 space-y-6 opacity-0 transition-opacity duration-1000">
         
-        <!-- Premium Header -->
-        <header class="bg-gradient-to-br from-indigo-600 to-violet-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-            <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <!-- Header -->
+        <header class="bg-gradient-to-br from-indigo-900 via-slate-900 to-black rounded-[2.5rem] p-8 border border-indigo-500/20 shadow-2xl relative overflow-hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
                 <div>
-                    <h1 class="text-4xl font-black tracking-tighter text-white italic">KUT MILLZ <span class="text-indigo-200 not-italic font-light text-2xl ml-2 uppercase tracking-widest">Bulk Call Center</span></h1>
-                    <div class="flex items-center mt-2 text-indigo-100/80">
-                        <span class="flex h-2 w-2 rounded-full bg-emerald-400 mr-2"></span>
-                        <p class="text-xs font-medium uppercase tracking-widest">Precision Dialing Interface v2.0</p>
+                    <h1 class="text-4xl md:text-5xl font-black tracking-tighter text-white italic">KUT MILLZ <span class="text-indigo-400 not-italic font-light text-xl ml-2 uppercase tracking-widest block md:inline">Global Bulk Hub</span></h1>
+                    <div class="flex items-center mt-3 text-indigo-300/60 mono text-[10px]">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 mr-3 animate-pulse"></span>
+                        SECURE_ENCRYPTION_ACTIVE // PORT_8080
                     </div>
                 </div>
-                <div id="connectionStatus" class="glass px-6 py-3 rounded-2xl text-xs font-bold mono text-indigo-200 border border-white/20">
-                    SYSTEM STATUS // IDLE
+                <div class="flex flex-wrap gap-2 md:gap-3">
+                    <button onclick="resetSession()" class="glass px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-rose-400 hover:bg-rose-500/10 transition-all border-rose-500/20">Clear Session</button>
+                    <button onclick="copyForGithub()" class="glass px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-300 hover:bg-indigo-500/20 transition-all border-indigo-500/40">Push to GitHub</button>
                 </div>
             </div>
 
-            <!-- Dashboard Stats -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                <div class="glass p-5 rounded-2xl">
-                    <p class="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-1">Total Contacts</p>
-                    <p id="statTotal" class="text-3xl font-black text-white">0</p>
+            <!-- Dashboard -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-10 relative z-10">
+                <div class="glass p-6 rounded-3xl border-slate-800">
+                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Queue Size</p>
+                    <p id="statTotal" class="text-3xl md:text-4xl font-black text-white italic">0</p>
                 </div>
-                <div class="glass p-5 rounded-2xl">
-                    <p class="text-[10px] font-black text-emerald-300 uppercase tracking-widest mb-1">Successful Triggers</p>
-                    <p id="statTriggered" class="text-3xl font-black text-emerald-400">0</p>
+                <div class="glass p-6 rounded-3xl border-emerald-500/20">
+                    <p class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">Answered</p>
+                    <p id="statTriggered" class="text-3xl md:text-4xl font-black text-emerald-400 italic">0</p>
                 </div>
-                <div class="glass p-5 rounded-2xl">
-                    <p class="text-[10px] font-black text-amber-300 uppercase tracking-widest mb-1">Remaining Queue</p>
-                    <p id="statPending" class="text-3xl font-black text-white">0</p>
+                <div class="glass p-6 rounded-3xl border-slate-800">
+                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Waiting</p>
+                    <p id="statPending" class="text-3xl md:text-4xl font-black text-white italic">0</p>
                 </div>
-                <div class="glass p-5 rounded-2xl">
-                    <p class="text-[10px] font-black text-rose-300 uppercase tracking-widest mb-1">Configured Delay</p>
-                    <p id="statDelay" class="text-3xl font-black text-rose-400">0s</p>
+                <div class="glass p-6 rounded-3xl border-rose-500/20">
+                    <p class="text-[9px] font-black text-rose-400 uppercase tracking-widest mb-1">Failed/Busy</p>
+                    <p id="statFailed" class="text-3xl md:text-4xl font-black text-rose-500 italic">0</p>
                 </div>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- Side Controls -->
+            <!-- Left Column: Controls & ACTIVE MONITOR -->
             <div class="lg:col-span-4 space-y-6">
-                <section class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 shadow-xl backdrop-blur-sm">
-                    <h2 class="text-xs font-black text-indigo-400 uppercase tracking-widest mb-6 flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-                        Controller Settings
+                
+                <!-- Active Monitor Section -->
+                <section class="bg-indigo-600 p-6 rounded-[2rem] shadow-2xl shadow-indigo-900/40 border-t border-indigo-400">
+                    <h2 class="text-xs font-black text-indigo-100 uppercase tracking-widest mb-4 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Active Monitor
                     </h2>
-                    
-                    <div class="space-y-5">
-                        <div class="group">
-                            <label class="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-tighter">Database Source (.xlsx)</label>
-                            <div class="relative">
-                                <input type="file" id="fileInput" accept=".xlsx, .xls" 
-                                    class="block w-full text-xs text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer bg-slate-900/50 rounded-xl border border-slate-700 p-1">
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-tighter">Trigger Interval (Sec)</label>
-                            <input type="number" id="intervalInput" value="10" min="5"
-                                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white font-black text-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
-                        </div>
-
-                        <div class="pt-4 space-y-3">
-                            <button id="startBtn" disabled class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-5 rounded-2xl transition-all shadow-lg shadow-indigo-900/40 disabled:opacity-20 uppercase tracking-[0.2em] text-sm group">
-                                <span class="group-hover:scale-110 transition-transform inline-block">Execute Sequence</span>
-                            </button>
-                            <button id="stopBtn" disabled class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-3 rounded-2xl transition-all disabled:opacity-20 uppercase text-[10px] tracking-widest">
-                                Abort Mission
-                            </button>
-                        </div>
+                    <div id="activeMonitor" class="bg-indigo-950/40 rounded-2xl p-6 border border-white/10 min-h-[140px] flex flex-col items-center justify-center text-center">
+                        <p class="text-indigo-300 text-[10px] font-black uppercase tracking-widest">Awaiting Active Feed</p>
                     </div>
                 </section>
 
-                <!-- Timer Component -->
-                <div id="countdownDisplay" class="hidden bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-3xl border border-indigo-500 shadow-2xl text-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-1 bg-slate-700">
-                        <div id="timerBar" class="h-full bg-indigo-500 transition-all duration-1000 w-0"></div>
+                <!-- Settings -->
+                <section class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-widest">Upload CSV/XLSX</label>
+                            <input type="file" id="fileInput" accept=".xlsx, .xls" class="w-full text-xs text-slate-400 file:bg-indigo-600 file:text-white file:border-0 file:py-2 file:px-4 file:rounded-xl bg-black/40 rounded-xl p-2 border border-slate-800">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-widest">Delay (Seconds)</label>
+                            <input type="number" id="intervalInput" value="15" min="5" class="w-full bg-black/40 border border-slate-800 rounded-xl p-4 text-white font-black text-2xl outline-none focus:border-indigo-500 transition-all">
+                        </div>
+                        <button id="startBtn" disabled class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-5 rounded-2xl transition-all shadow-xl disabled:opacity-10 uppercase tracking-[0.3em] text-sm">Initialize sequence</button>
                     </div>
-                    <p class="text-[10px] font-black text-indigo-400 mb-2 tracking-[0.3em] uppercase">Next Trigger Auto-Fire</p>
-                    <p id="timerText" class="text-6xl font-black text-white mono tracking-tighter">00s</p>
-                </div>
+                </section>
 
-                <!-- Terminal -->
-                <div class="bg-black rounded-3xl p-5 h-64 flex flex-col shadow-2xl border border-slate-800">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center">
-                            <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full mr-2 animate-pulse"></span>
-                            Command Log
-                        </h3>
-                        <span class="text-[8px] mono text-slate-700">LOG_STREAM_CONNECTED</span>
-                    </div>
-                    <div id="log" class="flex-1 overflow-y-auto text-[10px] mono text-indigo-400/80 space-y-1.5 scrollbar-hide">
-                        > SYSTEM_READY_FOR_DATA_INPUT...
+                <!-- Console -->
+                <div class="bg-black rounded-[2rem] p-6 h-48 flex flex-col border border-slate-800">
+                    <p class="text-[9px] font-black text-slate-700 uppercase tracking-widest mb-3 italic">System_Output</p>
+                    <div id="log" class="flex-1 overflow-y-auto text-[10px] mono text-indigo-400/60 space-y-1.5 scrollbar-hide">
+                        > TERMINAL_ONLINE...
                     </div>
                 </div>
             </div>
 
-            <!-- Main Display Area -->
-            <div class="lg:col-span-8 space-y-4">
-                <!-- Navigation -->
-                <div class="flex p-1 bg-slate-800/50 rounded-2xl border border-slate-700 w-fit">
-                    <button onclick="switchTab('queue')" id="tabQueue" class="px-8 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all bg-indigo-600 text-white shadow-lg">Live Queue</button>
-                    <button onclick="switchTab('report')" id="tabReport" class="px-8 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all text-slate-400 hover:text-white">Analytics Report</button>
+            <!-- Right Column: Queue & Report -->
+            <div class="lg:col-span-8 space-y-6">
+                <div class="flex p-1.5 bg-slate-900/80 rounded-2xl border border-slate-800 w-fit">
+                    <button onclick="switchTab('queue')" id="tabQueue" class="px-6 md:px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all bg-indigo-600 text-white shadow-lg">Target Queue</button>
+                    <button onclick="switchTab('report')" id="tabReport" class="px-6 md:px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all text-slate-500 hover:text-white">Session Analytics</button>
                 </div>
 
-                <!-- Queue View -->
-                <div id="viewQueue" class="bg-slate-800/30 rounded-3xl border border-slate-700/50 h-[700px] overflow-hidden flex flex-col backdrop-blur-sm">
-                    <div id="queueContainer" class="flex-1 overflow-y-auto p-6 space-y-4">
-                        <div class="h-full flex flex-col items-center justify-center text-slate-600">
-                            <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-4">
-                                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                            </div>
-                            <p class="font-black text-xs uppercase tracking-widest">Awaiting Database Feed</p>
-                        </div>
+                <div id="viewQueue" class="bg-slate-900/30 rounded-[2.5rem] border border-slate-800/50 h-[700px] overflow-hidden flex flex-col">
+                    <div id="queueContainer" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-4">
+                        <!-- Queue items -->
                     </div>
                 </div>
 
-                <!-- Report View -->
-                <div id="viewReport" class="hidden bg-slate-900 rounded-3xl border border-slate-800 h-[700px] overflow-hidden flex flex-col">
-                    <div class="p-6 border-b border-slate-800 flex justify-between items-center">
-                        <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Campaign History</h2>
-                        <button onclick="downloadReport()" class="text-[9px] font-black bg-emerald-500/10 text-emerald-400 px-4 py-2 rounded-xl border border-emerald-500/20 hover:bg-emerald-500/20 transition-all uppercase tracking-widest">Export Dataset</button>
+                <div id="viewReport" class="hidden bg-slate-950 rounded-[2.5rem] border border-slate-800 h-[700px] overflow-hidden flex flex-col">
+                    <div class="p-6 md:p-8 border-b border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center bg-black/20">
+                        <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Full Campaign Log</h2>
+                        <button onclick="downloadReport()" class="text-[10px] font-black bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-500 transition-all uppercase tracking-widest">Download Data</button>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-950/50">
+                        <table class="w-full text-left min-w-[500px]">
+                            <thead class="bg-black/40">
                                 <tr>
-                                    <th class="p-5 text-[9px] font-black text-slate-500 uppercase tracking-widest">Time</th>
-                                    <th class="p-5 text-[9px] font-black text-slate-500 uppercase tracking-widest">Identity</th>
-                                    <th class="p-5 text-[9px] font-black text-slate-500 uppercase tracking-widest">Number</th>
-                                    <th class="p-5 text-[9px] font-black text-slate-500 uppercase tracking-widest">Outcome</th>
+                                    <th class="p-6 text-[9px] font-black text-slate-600 uppercase tracking-widest">Timestamp</th>
+                                    <th class="p-6 text-[9px] font-black text-slate-600 uppercase tracking-widest">Name</th>
+                                    <th class="p-6 text-[9px] font-black text-slate-600 uppercase tracking-widest">Contact</th>
+                                    <th class="p-6 text-[9px] font-black text-slate-600 uppercase tracking-widest">Outcome</th>
                                 </tr>
                             </thead>
-                            <tbody id="reportTableBody" class="text-xs mono">
-                                <!-- Report data injected here -->
-                            </tbody>
+                            <tbody id="reportTableBody" class="text-xs mono text-slate-400"></tbody>
                         </table>
                     </div>
                 </div>
@@ -182,7 +198,43 @@
         </div>
     </div>
 
+    <!-- Telephony Link -->
+    <a id="telLink" href="#" class="hidden"></a>
+
     <script>
+        // Security Logic
+        let pin = "";
+        const targetPin = "666";
+
+        function pressKey(num) {
+            if (pin.length < 3) {
+                pin += num;
+                document.getElementById(`dot-${pin.length}`).classList.add('bg-indigo-500', 'border-indigo-500');
+                if (pin.length === 3) {
+                    setTimeout(validatePin, 300);
+                }
+            }
+        }
+
+        function clearPin() {
+            pin = "";
+            [1, 2, 3].forEach(i => document.getElementById(`dot-${i}`).className = "w-4 h-4 rounded-full border-2 border-slate-700");
+            document.getElementById('lockError').classList.add('hidden');
+        }
+
+        function validatePin() {
+            if (pin === targetPin) {
+                document.getElementById('lockscreen').style.display = 'none';
+                const app = document.getElementById('mainApp');
+                app.classList.remove('hidden');
+                setTimeout(() => app.style.opacity = '1', 10);
+            } else {
+                document.getElementById('lockError').classList.remove('hidden');
+                clearPin();
+            }
+        }
+
+        // App Logic
         let contacts = [];
         let currentIndex = 0;
         let isRunning = false;
@@ -192,20 +244,9 @@
         const fileInput = document.getElementById('fileInput');
         const intervalInput = document.getElementById('intervalInput');
         const startBtn = document.getElementById('startBtn');
-        const stopBtn = document.getElementById('stopBtn');
         const queueContainer = document.getElementById('queueContainer');
-        const reportTableBody = document.getElementById('reportTableBody');
+        const activeMonitor = document.getElementById('activeMonitor');
         const log = document.getElementById('log');
-        const countdownDisplay = document.getElementById('countdownDisplay');
-        const timerText = document.getElementById('timerText');
-        const timerBar = document.getElementById('timerBar');
-        const statusHeader = document.getElementById('connectionStatus');
-
-        // Stats Elements
-        const statTotal = document.getElementById('statTotal');
-        const statTriggered = document.getElementById('statTriggered');
-        const statPending = document.getElementById('statPending');
-        const statDelay = document.getElementById('statDelay');
 
         function switchTab(tab) {
             const vQueue = document.getElementById('viewQueue');
@@ -214,78 +255,67 @@
             const tReport = document.getElementById('tabReport');
 
             if (tab === 'queue') {
-                vQueue.classList.remove('hidden');
-                vReport.classList.add('hidden');
-                tQueue.className = "px-8 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all bg-indigo-600 text-white shadow-lg";
-                tReport.className = "px-8 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all text-slate-400 hover:text-white";
+                vQueue.classList.remove('hidden'); vReport.classList.add('hidden');
+                tQueue.className = "px-6 md:px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all bg-indigo-600 text-white shadow-lg";
+                tReport.className = "px-6 md:px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all text-slate-500 hover:text-white";
             } else {
-                vQueue.classList.add('hidden');
-                vReport.classList.remove('hidden');
-                tReport.className = "px-8 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all bg-indigo-600 text-white shadow-lg";
-                tQueue.className = "px-8 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all text-slate-400 hover:text-white";
+                vQueue.classList.add('hidden'); vReport.classList.remove('hidden');
+                tReport.className = "px-6 md:px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all bg-indigo-600 text-white shadow-lg";
+                tQueue.className = "px-6 md:px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all text-slate-500 hover:text-white";
             }
         }
 
-        function downloadReport() {
-            if (contacts.length === 0) return;
-            let csv = "Timestamp,Name,Phone,Outcome\n";
-            contacts.forEach(c => {
-                csv += `"${c.timestamp || ''}","${c.name}","${c.phone}","${c.outcome || 'Not Called'}"\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('hidden', '');
-            a.setAttribute('href', url);
-            a.setAttribute('download', `KUT_MILLZ_REPORT_${new Date().getTime()}.csv`);
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+        function resetSession() {
+            if (isRunning) {
+                if (!confirm("Stop the current sequence and clear all data?")) return;
+            }
+            isRunning = false;
+            clearInterval(countdownInterval);
+            contacts = [];
+            currentIndex = 0;
+            fileInput.value = '';
+            fileInput.disabled = false;
+            startBtn.disabled = true;
+            updateStats();
+            renderQueue();
+            renderReport();
+            activeMonitor.innerHTML = '<p class="text-indigo-300 text-[10px] font-black uppercase tracking-widest">Awaiting Active Feed</p>';
+            addLog("SYSTEM_RESET: DATA_CLEARED");
         }
 
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = (evt) => {
-                try {
-                    const data = new Uint8Array(evt.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-                    contacts = json.map(row => {
-                        const nameKey = Object.keys(row).find(k => k.toLowerCase() === 'name') || 'Name';
-                        const phoneKey = Object.keys(row).find(k => k.toLowerCase() === 'phone') || 'Phone';
-                        return {
-                            name: row[nameKey] || "GUEST",
-                            phone: String(row[phoneKey] || "").replace(/[^0-9+]/g, ''),
-                            status: 'pending',
-                            outcome: 'Pending',
-                            timestamp: null
-                        };
-                    }).filter(c => c.phone.length > 5);
-
-                    currentIndex = 0;
-                    updateStats();
-                    renderQueue();
-                    renderReport();
-                    startBtn.disabled = false;
-                    addLog(`DATASET_LOADED: ${contacts.length} entries initialized.`);
-                    statusHeader.innerText = "SYSTEM STATUS // READY";
-                } catch (err) {
-                    addLog("ERR: INVALID_DATA_STRUCTURE", "text-rose-500");
-                }
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                contacts = json.map(row => ({
+                    name: row[Object.keys(row).find(k => k.toLowerCase() === 'name')] || "UNKNOWN",
+                    phone: String(row[Object.keys(row).find(k => k.toLowerCase() === 'phone')] || "").replace(/[^0-9+]/g, ''),
+                    status: 'pending', outcome: 'Pending', timestamp: null
+                })).filter(c => c.phone.length > 5);
+                currentIndex = 0;
+                updateStats();
+                renderQueue();
+                startBtn.disabled = false;
+                addLog(`SYSTEM_LOAD: ${contacts.length} TARGETS_INITIALIZED`);
             };
             reader.readAsArrayBuffer(file);
         });
 
         function updateStats() {
-            statTotal.innerText = contacts.length;
-            statTriggered.innerText = contacts.filter(c => c.status === 'done').length;
-            statPending.innerText = contacts.filter(c => c.status === 'pending').length;
-            statDelay.innerText = intervalInput.value + 's';
+            document.getElementById('statTotal').innerText = contacts.length;
+            document.getElementById('statTriggered').innerText = contacts.filter(c => c.outcome === 'Answered').length;
+            document.getElementById('statPending').innerText = contacts.filter(c => c.status === 'pending').length;
+            document.getElementById('statFailed').innerText = contacts.filter(c => ['Busy', 'No Answer', 'Failed'].includes(c.outcome)).length;
+        }
+
+        function addLog(msg) {
+            const entry = document.createElement('div');
+            entry.innerHTML = `<span class="text-slate-800 mr-2">${new Date().toLocaleTimeString()}</span> ${msg}`;
+            log.prepend(entry);
         }
 
         function renderQueue() {
@@ -293,152 +323,143 @@
             contacts.forEach((c, i) => {
                 const isActive = (i === currentIndex && isRunning);
                 const div = document.createElement('div');
-                div.id = `q-item-${i}`;
-                div.className = `p-6 rounded-2xl border transition-all flex justify-between items-center ${
-                    isActive ? 'border-indigo-500 bg-indigo-500/10 active-call-ring' : 'border-slate-800 bg-slate-900/40'
-                } ${c.status === 'done' ? 'opacity-30 grayscale-[0.5]' : ''}`;
+                div.id = `q-${i}`;
+                div.className = `p-4 md:p-6 rounded-3xl border transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ${
+                    isActive ? 'bg-indigo-600/10 border-indigo-500 active-glow scale-[1.01]' : 'bg-slate-900/40 border-slate-800'
+                } ${c.status === 'done' ? 'opacity-20' : ''}`;
 
                 div.innerHTML = `
-                    <div class="flex items-center space-x-5">
-                        <div class="w-12 h-12 rounded-xl flex items-center justify-center font-black text-sm mono ${c.status === 'done' ? 'bg-slate-800 text-slate-600' : 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'}">
-                            #${String(i + 1).padStart(2, '0')}
-                        </div>
+                    <div class="flex items-center gap-4 md:gap-6">
+                        <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/40 border border-slate-800 flex items-center justify-center text-[10px] font-black italic shrink-0">#${i+1}</div>
                         <div>
-                            <p class="font-black text-white uppercase tracking-tight text-sm">${c.name}</p>
-                            <p class="text-[10px] mono text-slate-500 mt-1 tracking-widest">${c.phone}</p>
+                            <p class="font-black text-white uppercase text-xs">${c.name}</p>
+                            <p class="text-[10px] mono text-slate-500 mt-1">${c.phone}</p>
                         </div>
                     </div>
-                    <div class="flex items-center">
+                    <div class="w-full md:w-auto">
                         ${isActive ? `
-                            <select onchange="updateOutcome(${i}, this.value)" class="bg-slate-900 text-[10px] font-black text-indigo-400 border border-indigo-500/50 rounded-lg p-2 outline-none uppercase tracking-widest">
-                                <option value="Pending">Waiting Outcome...</option>
+                            <select onchange="setOutcome(${i}, this.value)" class="w-full bg-black border border-indigo-500/50 rounded-lg p-2 text-[9px] font-black text-indigo-400 uppercase outline-none">
+                                <option value="Pending">Setting Outcome...</option>
                                 <option value="Answered">Answered</option>
                                 <option value="No Answer">No Answer</option>
                                 <option value="Busy">Busy</option>
                                 <option value="Failed">Failed</option>
                             </select>
-                        ` : `<span class="text-[9px] font-black uppercase tracking-tighter px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 border border-slate-700">${c.outcome}</span>`}
+                        ` : `<span class="text-[8px] font-black px-3 py-1.5 rounded-lg border border-slate-800 bg-black/40 text-slate-600 uppercase block text-center md:inline">${c.outcome}</span>`}
                     </div>
                 `;
                 queueContainer.appendChild(div);
             });
-            
-            const active = document.getElementById(`q-item-${currentIndex}`);
-            if (active && isRunning) active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (isRunning) document.getElementById(`q-${currentIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        function renderReport() {
-            reportTableBody.innerHTML = '';
-            contacts.forEach(c => {
-                const row = document.createElement('tr');
-                row.className = "border-b border-slate-800/50 hover:bg-slate-800/30";
-                row.innerHTML = `
-                    <td class="p-5 text-slate-500 text-[10px]">${c.timestamp || '--:--'}</td>
-                    <td class="p-5 font-black text-slate-200 uppercase tracking-tight">${c.name}</td>
-                    <td class="p-5 text-slate-400">${c.phone}</td>
-                    <td class="p-5">
-                        <span class="px-2 py-1 rounded-md text-[9px] font-black uppercase ${
-                            c.outcome === 'Answered' ? 'bg-emerald-500/10 text-emerald-400' : 
-                            (c.outcome === 'Pending' ? 'text-slate-600' : 'bg-rose-500/10 text-rose-400')
-                        }">${c.outcome}</span>
-                    </td>
-                `;
-                reportTableBody.prepend(row);
-            });
-        }
-
-        function updateOutcome(index, val) {
+        function setOutcome(index, val) {
             contacts[index].outcome = val;
-            addLog(`EVENT: ${contacts[index].name} // OUTCOME_${val.toUpperCase()}`);
+            addLog(`STATUS_UPDATE: ${contacts[index].name} >> ${val.toUpperCase()}`);
+            updateStats();
             renderReport();
         }
 
-        function addLog(msg, colorClass = "text-indigo-400") {
-            const entry = document.createElement('div');
-            entry.className = `mb-1 ${colorClass}`;
-            entry.innerHTML = `<span class="text-slate-700 mr-2">${new Date().toLocaleTimeString()}</span> ${msg}`;
-            log.prepend(entry);
-        }
-
         function triggerCall() {
-            if (!isRunning || currentIndex >= contacts.length) {
-                stopAutomation();
+            if (currentIndex >= contacts.length) {
+                isRunning = false;
+                addLog("SEQUENCE_COMPLETE: ALL_TARGETS_PROCESSED");
+                activeMonitor.innerHTML = '<p class="text-emerald-400 text-[10px] font-black uppercase tracking-widest">Session Complete</p>';
                 return;
             }
 
-            const contact = contacts[currentIndex];
-            contact.status = 'active';
-            contact.timestamp = new Date().toLocaleTimeString();
+            const target = contacts[currentIndex];
+            target.status = 'active';
+            target.timestamp = new Date().toLocaleTimeString();
+            
+            activeMonitor.innerHTML = `
+                <div class="space-y-2">
+                    <p class="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Currently Calling</p>
+                    <p class="text-2xl md:text-3xl font-black text-white italic tracking-tighter uppercase line-clamp-1">${target.name}</p>
+                    <p class="text-indigo-200 mono text-xs">${target.phone}</p>
+                </div>
+            `;
+            
+            addLog(`DIALING_TARGET: ${target.name}`);
+            window.location.href = `tel:${target.phone}`;
             renderQueue();
-            
-            addLog(`SIGNAL_SENT: TARGETING_${contact.phone}`);
-            statusHeader.innerText = "SYSTEM STATUS // TRANSMITTING";
-            
-            window.location.href = `tel:${contact.phone}`;
 
             setTimeout(() => {
-                contact.status = 'done';
+                target.status = 'done';
                 currentIndex++;
                 updateStats();
-                renderQueue();
-                renderReport();
-                
-                if (currentIndex < contacts.length) {
-                    startCountdown();
-                } else {
-                    addLog("SEQUENCE_TERMINATED: ALL_TARGETS_PROCESSED", "text-emerald-500");
-                    stopAutomation();
-                }
+                if (currentIndex < contacts.length) startCountdown();
             }, 1000);
         }
 
         function startCountdown() {
-            const max = parseInt(intervalInput.value);
-            countdownValue = max;
-            countdownDisplay.classList.remove('hidden');
-            timerText.innerText = `${String(countdownValue).padStart(2, '0')}s`;
-            statusHeader.innerText = "SYSTEM STATUS // RECHARGING";
-
+            countdownValue = parseInt(intervalInput.value);
+            activeMonitor.innerHTML = `
+                <div class="space-y-2">
+                    <p class="text-[10px] font-black text-indigo-200 uppercase tracking-[0.3em]">Recharging System</p>
+                    <p class="text-5xl md:text-6xl font-black text-white italic tracking-tighter">${countdownValue}s</p>
+                    <p class="text-[9px] font-black text-indigo-300/40 uppercase tracking-widest">Next Target Prepped</p>
+                </div>
+            `;
+            
             countdownInterval = setInterval(() => {
                 countdownValue--;
-                timerText.innerText = `${String(countdownValue).padStart(2, '0')}s`;
-                const progress = ((max - countdownValue) / max) * 100;
-                timerBar.style.width = `${progress}%`;
-
+                const timerEl = activeMonitor.querySelector('.text-5xl, .text-6xl');
+                if (timerEl) timerEl.innerText = `${countdownValue}s`;
+                
                 if (countdownValue <= 0) {
                     clearInterval(countdownInterval);
-                    countdownDisplay.classList.add('hidden');
-                    timerBar.style.width = '0%';
                     triggerCall();
                 }
             }, 1000);
         }
 
-        function stopAutomation() {
-            isRunning = false;
-            clearInterval(countdownInterval);
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            fileInput.disabled = false;
-            intervalInput.disabled = false;
-            countdownDisplay.classList.add('hidden');
-            statusHeader.innerText = "SYSTEM STATUS // SUSPENDED";
-            addLog("WARN: MANUAL_OVERRIDE_TRIGGERED", "text-rose-500");
-            renderQueue();
+        function renderReport() {
+            const body = document.getElementById('reportTableBody');
+            body.innerHTML = '';
+            contacts.forEach(c => {
+                if (c.timestamp) {
+                    const row = document.createElement('tr');
+                    row.className = "border-b border-slate-900 hover:bg-white/5";
+                    row.innerHTML = `
+                        <td class="p-6 text-slate-600">${c.timestamp}</td>
+                        <td class="p-6 text-white font-black uppercase italic">${c.name}</td>
+                        <td class="p-6">${c.phone}</td>
+                        <td class="p-6"><span class="px-2 py-1 rounded border ${c.outcome === 'Answered' ? 'border-emerald-500/30 text-emerald-400' : 'border-slate-800 text-slate-500'}">${c.outcome}</span></td>
+                    `;
+                    body.prepend(row);
+                }
+            });
+        }
+
+        function downloadReport() {
+            let csv = "Timestamp,Name,Phone,Outcome\n";
+            contacts.forEach(c => csv += `"${c.timestamp||''}","${c.name}","${c.phone}","${c.outcome}"\n`);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `KUT_MILLZ_SESSION_${Date.now()}.csv`;
+            a.click();
+        }
+
+        function copyForGithub() {
+            const code = document.documentElement.outerHTML;
+            const textarea = document.createElement('textarea');
+            textarea.value = code;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert("SOURCE CODE COPIED: Paste this into index.html on GitHub.");
         }
 
         startBtn.addEventListener('click', () => {
-            if (contacts.length === 0) return;
             isRunning = true;
             startBtn.disabled = true;
-            stopBtn.disabled = false;
             fileInput.disabled = true;
-            intervalInput.disabled = true;
-            addLog("SYSTEM: INITIATING_PRIMARY_SEQUENCE...");
             triggerCall();
         });
-
-        stopBtn.addEventListener('click', stopAutomation);
     </script>
 </body>
 </html>
