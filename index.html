@@ -31,11 +31,6 @@
             border-radius: 1rem;
         }
 
-        .active-ring {
-            box-shadow: 0 0 0 2px var(--primary), 0 0 30px rgba(99, 102, 241, 0.2);
-            border-color: var(--primary);
-        }
-
         .numpad-btn {
             background: #1c1c21;
             transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -75,6 +70,15 @@
         .repo-card:hover { border-color: #3f3f46; transform: translateY(-2px); }
 
         .tab-btn.active { color: #818cf8; background: #1e1b4b; }
+        
+        /* Provider Selection Styles */
+        .provider-btn {
+            background: #16161a;
+            border: 1px solid #27272a;
+            transition: all 0.2s;
+        }
+        .provider-btn:hover { border-color: var(--primary); background: #1c1c21; transform: scale(1.02); }
+        .provider-btn:active { transform: scale(0.98); }
     </style>
 </head>
 <body class="h-screen flex flex-col">
@@ -86,8 +90,8 @@
                 <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl shadow-indigo-500/20">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
-                <h1 class="text-xl font-extrabold tracking-tight">KUT MILLZ PRO</h1>
-                <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Data & Repository v6.0</p>
+                <h1 class="text-xl font-extrabold tracking-tight text-white">KUT MILLZ PRO</h1>
+                <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Data & Repository v6.5</p>
             </div>
             
             <div class="flex justify-center gap-3 mb-8">
@@ -97,22 +101,59 @@
             </div>
 
             <div class="grid grid-cols-3 gap-3">
-                <button onclick="pressLockKey('1')" class="numpad-btn h-14 rounded-xl font-bold text-lg">1</button>
-                <button onclick="pressLockKey('2')" class="numpad-btn h-14 rounded-xl font-bold text-lg">2</button>
-                <button onclick="pressLockKey('3')" class="numpad-btn h-14 rounded-xl font-bold text-lg">3</button>
-                <button onclick="pressLockKey('4')" class="numpad-btn h-14 rounded-xl font-bold text-lg">4</button>
-                <button onclick="pressLockKey('5')" class="numpad-btn h-14 rounded-xl font-bold text-lg">5</button>
-                <button onclick="pressLockKey('6')" class="numpad-btn h-14 rounded-xl font-bold text-lg">6</button>
-                <button onclick="pressLockKey('7')" class="numpad-btn h-14 rounded-xl font-bold text-lg">7</button>
-                <button onclick="pressLockKey('8')" class="numpad-btn h-14 rounded-xl font-bold text-lg">8</button>
-                <button onclick="pressLockKey('9')" class="numpad-btn h-14 rounded-xl font-bold text-lg">9</button>
+                <button onclick="pressLockKey('1')" class="numpad-btn h-14 rounded-xl font-bold text-lg text-white">1</button>
+                <button onclick="pressLockKey('2')" class="numpad-btn h-14 rounded-xl font-bold text-lg text-white">2</button>
+                <button onclick="pressLockKey('3')" class="numpad-btn h-14 rounded-xl font-bold text-lg text-white">3</button>
+                <button onclick="pressLockKey('4')" class="numpad-btn h-14 rounded-xl font-bold text-lg text-white">4</button>
+                <button onclick="pressLockKey('5')" class="numpad-btn h-14 rounded-xl font-bold text-lg text-white">5</button>
+                <button onclick="pressLockKey('6')" class="numpad-btn h-14 rounded-xl font-bold text-lg text-white">6</button>
+                <button onclick="pressLockKey('7')" class="numpad-btn h-14 rounded-xl font-bold text-lg text-white">7</button>
+                <button onclick="pressLockKey('8')" class="numpad-btn h-14 rounded-xl font-bold text-lg text-white">8</button>
+                <button onclick="pressLockKey('9')" class="numpad-btn h-14 rounded-xl font-bold text-lg text-white">9</button>
                 <div></div>
-                <button onclick="pressLockKey('0')" class="numpad-btn h-14 rounded-xl font-bold text-lg">0</button>
+                <button onclick="pressLockKey('0')" class="numpad-btn h-14 rounded-xl font-bold text-lg text-white">0</button>
                 <button onclick="clearLockPin()" class="flex items-center justify-center text-zinc-500 hover:text-white transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z"></path></svg>
                 </button>
             </div>
             <p id="lockError" class="text-rose-500 text-[10px] font-bold mt-6 uppercase hidden">Key Authentication Failed</p>
+        </div>
+    </div>
+
+    <!-- CALL ROUTE SELECTOR MODAL -->
+    <div id="providerModal" class="hidden fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl flex items-center justify-center p-6">
+        <div class="max-w-xs w-full panel p-8 border-indigo-500/50 shadow-2xl shadow-indigo-500/20">
+            <div class="text-center mb-8">
+                <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                </div>
+                <h3 class="text-lg font-black tracking-tight text-white uppercase">Route Selection</h3>
+                <p id="modalPhoneNumber" class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-1">Ready to Dial</p>
+            </div>
+            
+            <div class="space-y-4">
+                <button onclick="setCallPreference('native')" class="provider-btn w-full p-5 rounded-2xl flex items-center gap-4 group">
+                    <div class="w-12 h-12 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-sm font-black text-white uppercase">System Dialer</p>
+                        <p class="text-[9px] text-zinc-500 font-bold tracking-tight">Direct Carrier Line</p>
+                    </div>
+                </button>
+
+                <button onclick="setCallPreference('gv')" class="provider-btn w-full p-5 rounded-2xl flex items-center gap-4 group">
+                    <div class="w-12 h-12 bg-indigo-500/10 text-indigo-500 rounded-xl flex items-center justify-center group-hover:bg-indigo-500 group-hover:text-white transition-all">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-sm font-black text-white uppercase">Google Voice</p>
+                        <p class="text-[9px] text-zinc-500 font-bold tracking-tight">Web VoIP / Browser</p>
+                    </div>
+                </button>
+
+                <button onclick="closeModal()" class="w-full py-3 text-[10px] font-black text-zinc-700 hover:text-zinc-400 uppercase tracking-widest transition-colors mt-4">Cancel Call</button>
+            </div>
         </div>
     </div>
 
@@ -122,7 +163,7 @@
         <!-- SIDE NAVIGATION -->
         <nav class="w-full md:w-20 bg-zinc-950 border-r border-zinc-900 flex md:flex-col items-center py-4 md:py-8 gap-8 px-4 md:px-0">
             <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
-                <span class="font-black italic text-xs">KM</span>
+                <span class="font-black italic text-xs text-white">KM</span>
             </div>
             <div class="flex md:flex-col gap-6 flex-1 justify-center md:justify-start">
                 <button onclick="switchTab('dialer')" id="nav-dialer" class="tab-btn active text-zinc-500 hover:bg-zinc-900 p-3 rounded-xl transition-all">
@@ -138,9 +179,12 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 </button>
             </div>
-            <button onclick="resetSession()" class="text-zinc-600 hover:text-rose-500 p-3 rounded-xl transition-all md:mt-auto">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-            </button>
+            
+            <div class="flex md:flex-col gap-6 md:mt-auto">
+                <button onclick="resetSession()" class="text-zinc-600 hover:text-rose-500 p-3 rounded-xl transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
         </nav>
 
         <!-- MAIN WORKSPACE -->
@@ -158,10 +202,10 @@
                         <p id="statTotal" class="text-lg font-bold text-white leading-none mt-1">0</p>
                     </div>
                     <div>
-                        <p class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">System Engine</p>
+                        <p class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Route Mode</p>
                         <div class="flex items-center gap-2 mt-1">
                             <div class="status-pulse"></div>
-                            <span class="text-[10px] font-bold text-emerald-500 uppercase">REPO_SYNC_STABLE</span>
+                            <span class="text-[10px] font-bold text-emerald-500 uppercase">MANUAL_SELECT_ENABLED</span>
                         </div>
                     </div>
                 </div>
@@ -177,7 +221,7 @@
                 <!-- LEAD FEED -->
                 <section class="flex-1 flex flex-col p-6 overflow-hidden">
                     <div class="mb-6">
-                        <h2 class="text-sm font-extrabold uppercase tracking-widest flex items-center gap-2">
+                        <h2 class="text-sm font-extrabold uppercase tracking-widest flex items-center gap-2 text-white">
                             <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
                             Active Sequence
                         </h2>
@@ -208,11 +252,11 @@
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-zinc-400">Next Call Cooldown</span>
                             <div class="flex items-center gap-2">
-                                <input type="number" id="intervalInput" value="10" class="w-14 bg-black border border-zinc-800 rounded px-2 py-1.5 text-xs text-center outline-none focus:border-indigo-500">
+                                <input type="number" id="intervalInput" value="10" class="w-14 bg-black border border-zinc-800 rounded px-2 py-1.5 text-xs text-center outline-none focus:border-indigo-500 text-white">
                                 <span class="text-[10px] text-zinc-600 font-bold uppercase">sec</span>
                             </div>
                         </div>
-                        <button id="startBtn" disabled class="w-full bg-indigo-600 hover:bg-indigo-500 py-4 rounded-xl font-extrabold text-xs uppercase tracking-[0.2em] transition-all disabled:opacity-10 shadow-lg shadow-indigo-600/10">Fire Sequence</button>
+                        <button id="startBtn" disabled onclick="toggleAutoDialer()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-4 rounded-xl font-extrabold text-xs uppercase tracking-[0.2em] transition-all disabled:opacity-10 shadow-lg shadow-indigo-600/10 text-white">Fire Sequence</button>
                     </div>
 
                     <div class="flex-1 flex flex-col overflow-hidden">
@@ -233,18 +277,18 @@
                     </div>
                     
                     <div class="grid grid-cols-3 gap-4">
-                        <button onclick="pressDial('1')" class="numpad-btn h-16 rounded-2xl text-xl font-bold">1</button>
-                        <button onclick="pressDial('2', 'ABC')" class="numpad-btn h-16 rounded-2xl text-xl font-bold">2<span>ABC</span></button>
-                        <button onclick="pressDial('3', 'DEF')" class="numpad-btn h-16 rounded-2xl text-xl font-bold">3<span>DEF</span></button>
-                        <button onclick="pressDial('4', 'GHI')" class="numpad-btn h-16 rounded-2xl text-xl font-bold">4<span>GHI</span></button>
-                        <button onclick="pressDial('5', 'JKL')" class="numpad-btn h-16 rounded-2xl text-xl font-bold">5<span>JKL</span></button>
-                        <button onclick="pressDial('6', 'MNO')" class="numpad-btn h-16 rounded-2xl text-xl font-bold">6<span>MNO</span></button>
-                        <button onclick="pressDial('7', 'PQRS')" class="numpad-btn h-16 rounded-2xl text-xl font-bold">7<span>PQRS</span></button>
-                        <button onclick="pressDial('8', 'TUV')" class="numpad-btn h-16 rounded-2xl text-xl font-bold">8<span>TUV</span></button>
-                        <button onclick="pressDial('9', 'WXYZ')" class="numpad-btn h-16 rounded-2xl text-xl font-bold">9<span>WXYZ</span></button>
-                        <button onclick="pressDial('*')" class="numpad-btn h-16 rounded-2xl text-xl font-bold">*</button>
-                        <button onclick="pressDial('0', '+')" class="numpad-btn h-16 rounded-2xl text-xl font-bold">0<span>+</span></button>
-                        <button onclick="pressDial('#')" class="numpad-btn h-16 rounded-2xl text-xl font-bold">#</button>
+                        <button onclick="pressDial('1')" class="numpad-btn h-16 rounded-2xl text-xl font-bold text-white">1</button>
+                        <button onclick="pressDial('2', 'ABC')" class="numpad-btn h-16 rounded-2xl text-xl font-bold text-white">2<span>ABC</span></button>
+                        <button onclick="pressDial('3', 'DEF')" class="numpad-btn h-16 rounded-2xl text-xl font-bold text-white">3<span>DEF</span></button>
+                        <button onclick="pressDial('4', 'GHI')" class="numpad-btn h-16 rounded-2xl text-xl font-bold text-white">4<span>GHI</span></button>
+                        <button onclick="pressDial('5', 'JKL')" class="numpad-btn h-16 rounded-2xl text-xl font-bold text-white">5<span>JKL</span></button>
+                        <button onclick="pressDial('6', 'MNO')" class="numpad-btn h-16 rounded-2xl text-xl font-bold text-white">6<span>MNO</span></button>
+                        <button onclick="pressDial('7', 'PQRS')" class="numpad-btn h-16 rounded-2xl text-xl font-bold text-white">7<span>PQRS</span></button>
+                        <button onclick="pressDial('8', 'TUV')" class="numpad-btn h-16 rounded-2xl text-xl font-bold text-white">8<span>TUV</span></button>
+                        <button onclick="pressDial('9', 'WXYZ')" class="numpad-btn h-16 rounded-2xl text-xl font-bold text-white">9<span>WXYZ</span></button>
+                        <button onclick="pressDial('*')" class="numpad-btn h-16 rounded-2xl text-xl font-bold text-white">*</button>
+                        <button onclick="pressDial('0', '+')" class="numpad-btn h-16 rounded-2xl text-xl font-bold text-white">0<span>+</span></button>
+                        <button onclick="pressDial('#')" class="numpad-btn h-16 rounded-2xl text-xl font-bold text-white">#</button>
                     </div>
 
                     <div class="flex justify-center gap-8 mt-4">
@@ -267,7 +311,7 @@
                         <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.3em] mt-1">Multi-Batch Lead Warehouse</p>
                     </div>
                     <div class="flex gap-4">
-                        <button onclick="clearAllRepos()" class="text-[10px] font-bold text-rose-500 border border-rose-500/20 px-4 py-2 rounded-lg bg-rose-500/5 hover:bg-rose-500 hover:text-white transition-all">Purge All Data</button>
+                        <button onclick="clearAllRepos()" class="text-[10px] font-bold text-rose-500 border border-rose-500/20 px-4 py-2 rounded-lg bg-rose-500/5 hover:bg-rose-500 hover:text-white transition-all uppercase tracking-widest">Purge All Data</button>
                     </div>
                 </div>
                 
@@ -353,19 +397,44 @@
             }
         }
 
-        // Tab Switching
-        function switchTab(tab) {
-            const tabs = ['dialer', 'report', 'repo', 'keypad'];
-            tabs.forEach(t => {
-                const el = document.getElementById(`${t}Tab`);
-                const btn = document.getElementById(`nav-${t}`);
-                if(el) el.classList.toggle('hidden', t !== tab);
-                if(btn) btn.classList.toggle('active', t === tab);
-            });
-            if(tab === 'repo') renderRepository();
+        // --- CALL ROUTING ENGINE (MANUAL SELECT ALWAYS) ---
+        let pendingPhoneNumber = "";
+
+        function initiateCall(phoneNumber) {
+            if (!phoneNumber) return;
+            // Show modal every time
+            pendingPhoneNumber = String(phoneNumber).replace(/[^0-9+]/g, '');
+            document.getElementById('modalPhoneNumber').innerText = `Destination: ${pendingPhoneNumber}`;
+            document.getElementById('providerModal').classList.remove('hidden');
         }
 
-        // State Engine
+        function setCallPreference(provider) {
+            document.getElementById('providerModal').classList.add('hidden');
+            executeCall(pendingPhoneNumber, provider);
+            pendingPhoneNumber = "";
+        }
+
+        function closeModal() {
+            document.getElementById('providerModal').classList.add('hidden');
+            pendingPhoneNumber = "";
+            if(isRunning) stopAutoDialer();
+        }
+
+        function executeCall(number, provider) {
+            addLog(`ROUTING: ${number} >> ${provider.toUpperCase()}`);
+            if (provider === 'gv') {
+                window.open(`https://voice.google.com/u/0/calls?number=${number}`, '_blank');
+            } else {
+                window.location.href = `tel:${number}`;
+            }
+            
+            if (isRunning) {
+                isWaitingForReturn = true;
+                addLog("ENGINE: AWAITING_FOCUS_FOR_NEXT_STEP");
+            }
+        }
+
+        // --- CORE APP LOGIC ---
         let repository = JSON.parse(localStorage.getItem('km_repo')) || [];
         let contacts = [];
         let currentIndex = 0;
@@ -392,16 +461,26 @@
         }
         function triggerManualCall() {
             if(manualInput.length > 2) {
-                window.location.href = `tel:${manualInput}`;
-                addLog(`MANUAL_CALL_INTENT: ${manualInput}`);
+                initiateCall(manualInput);
             }
         }
 
-        // Auto-Cycle Recovery Logic
+        // Tab Switching
+        function switchTab(tab) {
+            const tabs = ['dialer', 'report', 'repo', 'keypad'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`${t}Tab`);
+                const btn = document.getElementById(`nav-${t}`);
+                if(el) el.classList.toggle('hidden', t !== tab);
+                if(btn) btn.classList.toggle('active', t === tab);
+            });
+            if(tab === 'repo') renderRepository();
+        }
+
+        // Auto-Cycle Recovery
         window.addEventListener('focus', () => {
             if (isRunning && isWaitingForReturn) {
                 isWaitingForReturn = false;
-                addLog("FOCUS_DETECTED: TRIGGERING_AUTO_RECOVERY");
                 
                 if (currentIndex < contacts.length) {
                     contacts[currentIndex].status = 'done';
@@ -417,6 +496,61 @@
                 }
             }
         });
+
+        function toggleAutoDialer() {
+            if (!isRunning) {
+                isRunning = true;
+                startBtn.innerText = "HALT SEQUENCE";
+                startBtn.classList.replace('bg-indigo-600', 'bg-rose-600');
+                startCallCycle();
+            } else {
+                stopAutoDialer();
+            }
+        }
+
+        function stopAutoDialer() {
+            isRunning = false;
+            isWaitingForReturn = false;
+            clearInterval(countdownInterval);
+            startBtn.innerText = "FIRE SEQUENCE";
+            startBtn.classList.replace('bg-rose-600', 'bg-indigo-600');
+            addLog("SYSTEM_WORK: SEQUENCE_HALTED");
+        }
+
+        function startCallCycle() {
+            if (!isRunning || currentIndex >= contacts.length) return;
+            const current = contacts[currentIndex];
+            initiateCall(current.phone);
+        }
+
+        function startCountdown() {
+            let timeLeft = parseInt(intervalInput.value);
+            activeMonitor.innerHTML = `
+                <p class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Monitor Station</p>
+                <div class="text-center py-6">
+                    <p class="text-4xl font-black text-indigo-500 mb-2">${timeLeft}s</p>
+                    <p class="text-[9px] text-zinc-600 uppercase font-bold tracking-widest">Cooling Down for Next Lead</p>
+                </div>
+            `;
+            
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                const timerDisplay = activeMonitor.querySelector('p.text-4xl');
+                if (timerDisplay) timerDisplay.innerText = `${timeLeft}s`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    startCallCycle();
+                }
+            }, 1000);
+        }
+
+        function finishCampaign() {
+            isRunning = false;
+            addLog("CAMPAIGN_COMPLETE");
+            startBtn.innerText = "SEQUENCE FINISHED";
+            startBtn.disabled = true;
+        }
 
         // Batch Importer
         fileInput.addEventListener('change', (e) => {
@@ -437,33 +571,60 @@
         function saveToRepo(name, data) {
             repository.push({ name, id: Date.now(), data, count: data.length });
             localStorage.setItem('km_repo', JSON.stringify(repository));
-            addLog(`REPO_UPDATE: BATCH_${name}_STORED`);
+            addLog(`STORED: BATCH_${name}`);
+        }
+
+        function processLeads(dataArray) {
+            const newContacts = dataArray.map(row => ({
+                name: row.name || row[Object.keys(row).find(k => k.toLowerCase().includes('name'))] || "Unidentified Lead",
+                phone: String(row.phone || row[Object.keys(row).find(k => k.toLowerCase().includes('phone'))] || "").replace(/[^0-9+]/g, ''),
+                status: 'pending'
+            })).filter(c => c.phone.length > 5);
+            
+            contacts = newContacts;
+            currentIndex = 0;
+            renderQueue();
+            updateStats();
+            startBtn.disabled = false;
+            addLog(`LOADED: ${contacts.length} LEADS`);
+        }
+
+        function renderQueue() {
+            queueContainer.innerHTML = '';
+            contacts.forEach((c, idx) => {
+                const active = idx === currentIndex;
+                const div = document.createElement('div');
+                div.className = `p-4 rounded-xl border flex items-center justify-between transition-all ${active ? 'bg-indigo-500/10 border-indigo-500' : 'bg-zinc-950 border-zinc-900 opacity-60'}`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center font-bold text-[10px] text-zinc-500">${idx+1}</div>
+                        <div>
+                            <p class="text-xs font-bold text-white uppercase">${c.name}</p>
+                            <p class="text-[10px] text-zinc-500 font-bold">${c.phone}</p>
+                        </div>
+                    </div>
+                `;
+                queueContainer.appendChild(div);
+            });
         }
 
         function renderRepository() {
             const grid = document.getElementById('repoGrid');
             grid.innerHTML = '';
-            
             if(repository.length === 0) {
                 grid.innerHTML = `<div class="col-span-full py-20 text-center opacity-20"><p class="text-xs font-bold uppercase tracking-widest">Repository Empty</p></div>`;
                 return;
             }
-
             repository.forEach((batch, idx) => {
                 const card = document.createElement('div');
                 card.className = "repo-card p-6 rounded-2xl flex flex-col gap-4";
                 card.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-white font-black uppercase text-lg leading-tight">${batch.name}</p>
-                            <p class="text-[10px] font-bold text-zinc-500 mt-1 uppercase tracking-widest">${batch.count} Records Found</p>
-                        </div>
-                        <div class="bg-zinc-800 p-2 rounded-lg text-indigo-400">
-                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        </div>
+                    <div>
+                        <p class="text-white font-black uppercase text-lg leading-tight">${batch.name}</p>
+                        <p class="text-[10px] font-bold text-zinc-500 mt-1 uppercase tracking-widest">${batch.count} Records</p>
                     </div>
                     <div class="mt-4 flex gap-3">
-                        <button onclick="loadBatch(${idx})" class="flex-1 bg-white text-black py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all">Load Into Dialer</button>
+                        <button onclick="loadBatch(${idx})" class="flex-1 bg-white text-black py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all">Load</button>
                         <button onclick="deleteBatch(${idx})" class="bg-zinc-800 text-rose-400 p-2.5 rounded-xl hover:bg-rose-500 hover:text-white transition-all">
                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
@@ -476,7 +637,6 @@
         function loadBatch(idx) {
             processLeads(repository[idx].data);
             switchTab('dialer');
-            addLog(`CORE_LOAD: BATCH_${repository[idx].name}_ACTIVE`);
         }
 
         function deleteBatch(idx) {
@@ -486,25 +646,10 @@
         }
 
         function clearAllRepos() {
-            if(!confirm("Destroy all saved batches in repository?")) return;
+            if(!confirm("Destroy all saved batches?")) return;
             repository = [];
             localStorage.removeItem('km_repo');
             renderRepository();
-        }
-
-        // Logic Processors
-        function processLeads(dataArray) {
-            const newContacts = dataArray.map(row => ({
-                name: row.name || row[Object.keys(row).find(k => k.toLowerCase().includes('name'))] || "Unidentified Lead",
-                phone: String(row.phone || row[Object.keys(row).find(k => k.toLowerCase().includes('phone'))] || "").replace(/[^0-9+]/g, ''),
-                status: 'pending', outcome: 'Pending', timestamp: null
-            })).filter(c => c.phone.length > 5);
-            
-            contacts = newContacts;
-            currentIndex = 0;
-            renderQueue();
-            updateStats();
-            startBtn.disabled = false;
         }
 
         function addLog(msg) {
@@ -517,173 +662,17 @@
         function updateStats() {
             const total = contacts.length;
             const finished = contacts.filter(c => c.status === 'done').length;
-            const answered = contacts.filter(c => c.outcome === 'Answered').length;
-            
             document.getElementById('statTotal').innerText = total;
             document.getElementById('statProcessed').innerText = finished;
-            document.getElementById('statAnsweredTab').innerText = answered;
-            document.getElementById('statDropped').innerText = contacts.filter(c => ['Busy', 'Failed'].includes(c.outcome)).length;
-            
-            const rate = finished > 0 ? Math.round((answered / finished) * 100) : 0;
+            const rate = finished > 0 ? Math.round((finished / total) * 100) : 0;
             document.getElementById('statConnectRate').innerText = `${rate}%`;
         }
 
-        function renderQueue() {
-            queueContainer.innerHTML = '';
-            contacts.forEach((lead, i) => {
-                const isActive = (isRunning && i === currentIndex);
-                const div = document.createElement('div');
-                div.id = `lead-${i}`;
-                div.className = `panel p-4 flex items-center justify-between transition-all ${isActive ? 'active-ring bg-indigo-500/5' : 'bg-zinc-900/40'} ${lead.status === 'done' ? 'opacity-30 grayscale-[0.8]' : ''}`;
-                
-                div.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center font-bold text-xs ${isActive ? 'text-indigo-400' : 'text-zinc-600'}">
-                            ${i + 1}
-                        </div>
-                        <div>
-                            <p class="text-xs font-extrabold uppercase tracking-tight text-white">${lead.name}</p>
-                            <p class="text-[10px] mono text-zinc-500">${lead.phone}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        ${isActive ? `
-                            <select onchange="setOutcome(${i}, this.value)" class="bg-black border border-indigo-500/50 rounded-lg px-3 py-2 text-[10px] font-bold text-indigo-400 uppercase outline-none">
-                                <option value="Pending">Outcome</option>
-                                <option value="Answered">Answered</option>
-                                <option value="No Answer">No Answer</option>
-                                <option value="Busy">Busy</option>
-                                <option value="Failed">Failed</option>
-                            </select>
-                        ` : `
-                            <span class="text-[9px] font-bold px-3 py-1.5 rounded bg-black/40 text-zinc-600 uppercase border border-zinc-800/50">${lead.outcome}</span>
-                        `}
-                    </div>
-                `;
-                queueContainer.appendChild(div);
-            });
-            if (isRunning) document.getElementById(`lead-${currentIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        function triggerCall() {
-            if (currentIndex >= contacts.length) {
-                finishCampaign();
-                return;
-            }
-
-            const lead = contacts[currentIndex];
-            lead.status = 'active';
-            lead.timestamp = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            
-            activeMonitor.innerHTML = `
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <span class="text-[9px] font-black text-indigo-400 tracking-[0.2em] uppercase">Dialing Intent...</span>
-                    </div>
-                    <div>
-                        <p class="text-2xl font-black text-white leading-tight uppercase">${lead.name}</p>
-                        <p class="text-xs text-zinc-500 mono mt-1">${lead.phone}</p>
-                    </div>
-                    <div class="pt-2 border-t border-zinc-900">
-                        <p class="text-[10px] text-zinc-600 font-bold uppercase tracking-widest leading-relaxed">Automation will cycle when you return to this window.</p>
-                    </div>
-                </div>
-            `;
-
-            addLog(`INTENT_TRIGGER: ${lead.phone}`);
-            window.location.href = `tel:${lead.phone}`;
-            isWaitingForReturn = true;
-            renderQueue();
-        }
-
-        function startCountdown() {
-            let val = parseInt(intervalInput.value);
-            activeMonitor.innerHTML = `
-                <div class="text-center py-6">
-                    <p class="text-[9px] font-bold text-zinc-700 uppercase tracking-widest mb-2">Sequence Cooldown</p>
-                    <p class="text-5xl font-black text-white" id="countdownTimer">${val}s</p>
-                    <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-[0.3em] mt-4">Next: ${contacts[currentIndex].name}</p>
-                </div>
-            `;
-            
-            countdownInterval = setInterval(() => {
-                val--;
-                const timerEl = document.getElementById('countdownTimer');
-                if (timerEl) timerEl.innerText = `${val}s`;
-                
-                if (val <= 0) {
-                    clearInterval(countdownInterval);
-                    triggerCall();
-                }
-            }, 1000);
-        }
-
-        function finishCampaign() {
-            isRunning = false;
-            startBtn.innerText = "RESTART BATCH";
-            startBtn.disabled = false;
-            activeMonitor.innerHTML = `
-                <div class="text-center py-6">
-                    <div class="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-inner">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                    </div>
-                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-white">Full Sequence Complete</p>
-                    <p class="text-[10px] text-zinc-600 mt-1 uppercase font-bold">Check Analytics for Export</p>
-                </div>
-            `;
-            addLog("CORE_WORK: SEQUENCE_TERMINATED_CLEAN");
-        }
-
-        function setOutcome(index, val) {
-            contacts[index].outcome = val;
-            addLog(`SYNC: [${contacts[index].name} >> ${val}]`);
-            updateStats();
-            renderReport();
-        }
-
-        function renderReport() {
-            const body = document.getElementById('reportTableBody');
-            body.innerHTML = '';
-            contacts.filter(c => c.timestamp).forEach(c => {
-                const row = document.createElement('tr');
-                row.className = "hover:bg-zinc-900/30 transition-colors";
-                row.innerHTML = `
-                    <td class="p-5 font-bold text-white uppercase text-xs">${c.name}</td>
-                    <td class="p-5 mono text-zinc-500 text-xs">${c.phone}</td>
-                    <td class="p-5">
-                        <span class="px-3 py-1.5 rounded-lg text-[9px] font-bold border ${c.outcome === 'Answered' ? 'border-emerald-500/20 text-emerald-400 bg-emerald-500/5' : 'border-zinc-800 text-zinc-600'}">
-                            ${c.outcome}
-                        </span>
-                    </td>
-                    <td class="p-5 text-zinc-600 text-[10px] font-bold">${c.timestamp}</td>
-                `;
-                body.prepend(row);
-            });
-        }
-
-        function downloadReport() {
-            let csv = "Timestamp,Lead Name,Phone,Outcome\n";
-            contacts.forEach(c => csv += `"${c.timestamp||''}","${c.name}","${c.phone}","${c.outcome}"\n`);
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `KM_EXPORT_${new Date().getTime()}.csv`;
-            a.click();
-        }
-
         function resetSession() {
-            if (!confirm("Wipe active session? (Repository data will be kept)")) return;
-            location.reload();
+            if(confirm("Exit to Lock Screen?")) {
+                location.reload();
+            }
         }
-
-        startBtn.addEventListener('click', () => {
-            if (contacts.length === 0) return;
-            isRunning = true;
-            startBtn.disabled = true;
-            triggerCall();
-        });
     </script>
 </body>
 </html>
