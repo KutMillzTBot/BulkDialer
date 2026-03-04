@@ -40,7 +40,7 @@
             <div id="status-dot" class="w-2 h-2 rounded-full bg-emerald-500"></div>
             <span id="status-text" class="text-xs font-medium text-zinc-400 uppercase tracking-tighter">System Ready</span>
         </div>
-        <div class="text-xs text-zinc-500 font-mono">v1.1.5-USA</div>
+        <div class="text-xs text-zinc-500 font-mono">v1.1.6-AUTOTRIGGER</div>
     </div>
 
     <!-- Main Content Area -->
@@ -301,8 +301,6 @@
             if (!num) return;
             
             // --- US NUMBER FORMATTING LOGIC ---
-            // If number doesn't start with 1, and it is 10 digits long, assume US (+1)
-            // If it starts with 1 and is 11 digits, it's already got the country code.
             let fullNum = num;
             if (num.length === 10) {
                 fullNum = "1" + num;
@@ -317,19 +315,22 @@
             
             let url = `tel:+${fullNum}`;
             if (preferredDialer === 'googlevoice') {
-                // Ensure the URL is correctly constructed with +1 prefix
                 url = `https://voice.google.com/calls?a=nc,%2B${fullNum}`;
             }
 
             const lead = leads[currentIdx];
             const logName = (lead && lead.phone === num) ? `${lead.firstName} ${lead.lastName}` : 'Manual Entry';
-            callLogs.unshift({
-                id: Date.now(),
-                phoneNumber: `+${fullNum}`,
-                name: logName,
-                timestamp: new Date().toISOString()
-            });
-            localStorage.setItem('kut_callLogs', JSON.stringify(callLogs));
+            
+            // Only log if not already at the top of history (prevent double logs)
+            if (callLogs.length === 0 || callLogs[0].phoneNumber !== `+${fullNum}`) {
+                callLogs.unshift({
+                    id: Date.now(),
+                    phoneNumber: `+${fullNum}`,
+                    name: logName,
+                    timestamp: new Date().toISOString()
+                });
+                localStorage.setItem('kut_callLogs', JSON.stringify(callLogs));
+            }
 
             document.getElementById('status-text').innerText = "Routing Call...";
             document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-orange-500 animate-pulse";
@@ -368,8 +369,15 @@
             document.getElementById('status-text').innerText = "System Ready";
             document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-emerald-500";
 
-            if (autoDialEnabled && currentIdx < leads.length - 1) {
-                nextLead();
+            if (autoDialEnabled) {
+                // If there's a next lead, move to it first
+                if (currentIdx < leads.length - 1) {
+                    nextLead();
+                    // AUTO TRIGGER THE CALL
+                    setTimeout(() => {
+                        handleDial();
+                    }, 500);
+                }
             }
         }
 
