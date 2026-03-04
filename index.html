@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kut Dialer - Pro</title>
+    <title>Kut Dialer - Pro (US Fixed)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -27,7 +27,6 @@
         
         input::placeholder { color: #27272a; }
 
-        /* Custom scrollbar for logs */
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
@@ -41,7 +40,7 @@
             <div id="status-dot" class="w-2 h-2 rounded-full bg-emerald-500"></div>
             <span id="status-text" class="text-xs font-medium text-zinc-400 uppercase tracking-tighter">System Ready</span>
         </div>
-        <div class="text-xs text-zinc-500 font-mono">v1.1.4-HTML</div>
+        <div class="text-xs text-zinc-500 font-mono">v1.1.5-USA</div>
     </div>
 
     <!-- Main Content Area -->
@@ -143,7 +142,6 @@
                     <button onclick="clearLogs()" class="text-[10px] text-red-500 uppercase font-bold">Clear All</button>
                 </div>
                 <div id="logs-container" class="divide-y divide-zinc-800 max-h-[400px] overflow-y-auto custom-scroll">
-                    <!-- Logs injected here -->
                 </div>
             </div>
         </div>
@@ -202,7 +200,7 @@
     </nav>
 
     <script>
-        // --- State Management ---
+        // --- State ---
         let leads = JSON.parse(localStorage.getItem('kut_campaignLeads')) || [];
         let currentIdx = parseInt(localStorage.getItem('kut_currentLeadIdx')) || 0;
         let callLogs = JSON.parse(localStorage.getItem('kut_callLogs')) || [];
@@ -212,21 +210,15 @@
         
         let remainingCooldown = 0;
         let cooldownTimer = null;
-        let activeTab = 'dialer';
 
-        // --- Init ---
         function init() {
             lucide.createIcons();
             updateUI();
             updateSettingsUI();
-            
             document.getElementById('file-input').addEventListener('change', handleFileUpload);
-            document.getElementById('phone-input').addEventListener('input', (e) => savePhone(e.target.value));
         }
 
-        // --- Logic Handlers ---
         function updateUI() {
-            // Lead Card
             const card = document.getElementById('lead-card');
             if (leads.length > 0 && leads[currentIdx]) {
                 const lead = leads[currentIdx];
@@ -249,17 +241,15 @@
                 card.classList.add('hide');
             }
 
-            // Stats
             document.getElementById('stat-calls').innerText = callLogs.length;
             const progress = leads.length > 0 ? Math.round(((currentIdx + 1) / leads.length) * 100) : 0;
             document.getElementById('stat-progress').innerText = progress + '%';
 
-            // Logs
             const container = document.getElementById('logs-container');
             container.innerHTML = callLogs.length === 0 ? '<div class="p-12 text-center text-zinc-600 italic text-sm">No activity recorded</div>' : '';
             callLogs.forEach(log => {
                 const row = document.createElement('div');
-                row.className = "p-4 flex items-center justify-between hover:bg-zinc-800/50 transition-colors";
+                row.className = "p-4 flex items-center justify-between hover:bg-zinc-800/50";
                 row.innerHTML = `
                     <div class="flex flex-col">
                         <span class="text-white font-bold text-sm">${log.name}</span>
@@ -274,7 +264,6 @@
             });
             lucide.createIcons();
 
-            // AutoDial Label
             const adLabel = document.getElementById('autodial-label');
             const adBtn = document.getElementById('toggle-autodial');
             if (autoDialEnabled) {
@@ -300,7 +289,6 @@
             document.getElementById('provider-label').innerText = preferredDialer === 'googlevoice' ? 'Google Voice' : 'Standard';
         }
 
-        // --- Dialer Actions ---
         function appendNum(n) { document.getElementById('phone-input').value += n; }
         function backspace() { 
             const inp = document.getElementById('phone-input');
@@ -309,31 +297,41 @@
         function setPhone(n) { document.getElementById('phone-input').value = n; }
 
         function handleDial() {
-            const num = document.getElementById('phone-input').value.replace(/\D/g, '');
+            let num = document.getElementById('phone-input').value.replace(/\D/g, '');
             if (!num) return;
+            
+            // --- US NUMBER FORMATTING LOGIC ---
+            // If number doesn't start with 1, and it is 10 digits long, assume US (+1)
+            // If it starts with 1 and is 11 digits, it's already got the country code.
+            let fullNum = num;
+            if (num.length === 10) {
+                fullNum = "1" + num;
+            } else if (num.length === 11 && num.startsWith('1')) {
+                fullNum = num;
+            }
+
             if (!preferredDialer) {
                 openAppPicker();
                 return;
             }
             
-            let url = `tel:${num}`;
+            let url = `tel:+${fullNum}`;
             if (preferredDialer === 'googlevoice') {
-                url = `https://voice.google.com/calls?a=nc,%2B${num}`;
+                // Ensure the URL is correctly constructed with +1 prefix
+                url = `https://voice.google.com/calls?a=nc,%2B${fullNum}`;
             }
 
-            // Log it
             const lead = leads[currentIdx];
             const logName = (lead && lead.phone === num) ? `${lead.firstName} ${lead.lastName}` : 'Manual Entry';
             callLogs.unshift({
                 id: Date.now(),
-                phoneNumber: num,
+                phoneNumber: `+${fullNum}`,
                 name: logName,
                 timestamp: new Date().toISOString()
             });
             localStorage.setItem('kut_callLogs', JSON.stringify(callLogs));
 
-            // State update
-            document.getElementById('status-text').innerText = "Dialing Process...";
+            document.getElementById('status-text').innerText = "Routing Call...";
             document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-orange-500 animate-pulse";
             
             window.open(url, '_blank');
@@ -375,7 +373,6 @@
             }
         }
 
-        // --- Lead Management ---
         function nextLead() {
             if (currentIdx < leads.length - 1) {
                 currentIdx++;
@@ -446,16 +443,13 @@
                     updateUI();
                     document.getElementById('import-text').innerText = "Import XLSX";
                 } catch (err) {
-                    console.error(err);
                     document.getElementById('import-text').innerText = "Error!";
                 }
             };
             reader.readAsBinaryString(file);
         }
 
-        // --- Settings & Tabs ---
         function switchTab(t) {
-            activeTab = t;
             ['dialer', 'history', 'settings'].forEach(name => {
                 document.getElementById('tab-' + name).classList.add('hide');
                 document.getElementById('nav-' + name).classList.remove('active-tab-btn');
@@ -499,13 +493,12 @@
         }
 
         function wipeData() {
-            if(confirm("Are you sure? This will delete all leads, history, and settings.")) {
+            if(confirm("Factory reset? This deletes leads, history, and settings.")) {
                 localStorage.clear();
                 window.location.reload();
             }
         }
 
-        // Init on load
         window.onload = init;
     </script>
 </body>
